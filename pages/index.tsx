@@ -1,13 +1,21 @@
 import type { NextPage } from "next";
 import Head from "next/head";
-import { Fragment, useState } from "react";
+import { useState } from "react";
 
 function pickRandomFromArray<T>(freqs: readonly T[]): T {
   return freqs[Math.floor(Math.random() * freqs.length)];
 }
+
+type Filenames = "sub-bass" | "low" | "low-mid" | "mid" | "high-mid" | "high";
 type AnswerStates = "pending" | "correct" | "incorrect";
 
-const config = [
+interface ConfigItem {
+  frequencyRange: string;
+  keywords: string;
+  name: Filenames;
+}
+
+const config: ConfigItem[] = [
   {
     frequencyRange: "20-60 hz",
     keywords: "Rumbly, sloppy, loose",
@@ -38,7 +46,7 @@ const config = [
     keywords: "Shimmery, airy",
     name: "high",
   },
-] as const;
+];
 
 const filenames = config.map((elem) => elem.name);
 const initialChallenge = pickRandomFromArray(filenames);
@@ -46,9 +54,6 @@ const initialChallenge = pickRandomFromArray(filenames);
 const Home: NextPage = () => {
   const [currentChallenge, setCurrentChallenge] = useState(initialChallenge);
   const [answerState, setAnswerState] = useState<AnswerStates>("pending");
-
-  const isAnswerCorrect = answerState === "correct";
-  const isAnswerIncorrect = answerState === "incorrect";
 
   const handleOnFrequencyRangeClick = (filename: typeof filenames[number]) => {
     if (filename === currentChallenge) {
@@ -81,7 +86,11 @@ const Home: NextPage = () => {
         <div className="mb-4 grid grid-cols-2 gap-2">
           {config.map((elem) => {
             return (
-              <button disabled={isAnswerCorrect} onClick={() => handleOnFrequencyRangeClick(elem.name)} key={elem.name}>
+              <button
+                disabled={answerState === "correct"}
+                onClick={() => handleOnFrequencyRangeClick(elem.name)}
+                key={elem.name}
+              >
                 <img src={`/images/${elem.name}.png`} className="rounded-lg" />
               </button>
             );
@@ -89,7 +98,7 @@ const Home: NextPage = () => {
         </div>
 
         <div>
-          {isAnswerCorrect && (
+          {answerState === "correct" && (
             <div className="space-y-4 flex flex-col items-center">
               <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24">
                 <path
@@ -132,7 +141,7 @@ const Home: NextPage = () => {
         </div>
 
         <div>
-          {isAnswerIncorrect && (
+          {answerState === "incorrect" && (
             <svg
               clip-rule="evenodd"
               fill-rule="evenodd"
